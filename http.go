@@ -3,6 +3,7 @@ package gost
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net"
@@ -27,7 +28,16 @@ func HTTPConnector(user *url.Userinfo) Connector {
 	return &httpConnector{User: user}
 }
 
-func (c *httpConnector) Connect(conn net.Conn, addr string, options ...ConnectOption) (net.Conn, error) {
+func (c *httpConnector) Connect(conn net.Conn, address string, options ...ConnectOption) (net.Conn, error) {
+	return c.ConnectContext(context.Background(), conn, "tcp", address, options...)
+}
+
+func (c *httpConnector) ConnectContext(ctx context.Context, conn net.Conn, network, address string, options ...ConnectOption) (net.Conn, error) {
+	switch network {
+	case "udp", "udp4", "udp6":
+		return nil, fmt.Errorf("%s unsupported", network)
+	}
+
 	opts := &ConnectOptions{}
 	for _, option := range options {
 		option(opts)
@@ -47,8 +57,8 @@ func (c *httpConnector) Connect(conn net.Conn, addr string, options ...ConnectOp
 
 	req := &http.Request{
 		Method:     http.MethodConnect,
-		URL:        &url.URL{Host: addr},
-		Host:       addr,
+		URL:        &url.URL{Host: address},
+		Host:       address,
 		ProtoMajor: 1,
 		ProtoMinor: 1,
 		Header:     make(http.Header),
@@ -381,11 +391,9 @@ func (h *httpHandler) forwardRequest(conn net.Conn, req *http.Request, route *Ch
 	var userpass string
 
 	if user := route.LastNode().User; user != nil {
-		s := user.String()
-		if _, set := user.Password(); !set {
-			s += ":"
-		}
-		userpass = base64.StdEncoding.EncodeToString([]byte(s))
+		u := user.Username()
+		p, _ := user.Password()
+		userpass = base64.StdEncoding.EncodeToString([]byte(u + ":" + p))
 	}
 
 	cc, err := route.Conn()
