@@ -128,6 +128,10 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 		InsecureSkipVerify: !node.GetBool("secure"),
 		RootCAs:            rootCAs,
 	}
+	if cert, err := tls.LoadX509KeyPair(node.Get("cert"), node.Get("key")); err == nil {
+		tlsCfg.Certificates = []tls.Certificate{cert}
+	}
+
 	wsOpts := &gost.WSOptions{}
 	wsOpts.EnableCompression = node.GetBool("compression")
 	wsOpts.ReadBufferSize = node.GetInt("rbuf")
@@ -234,19 +238,20 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 		connector = gost.AutoConnector(node.User)
 	}
 
+	host := node.Get("host")
+	if host == "" {
+		host = node.Host
+	}
+
 	node.DialOptions = append(node.DialOptions,
 		gost.TimeoutDialOption(timeout),
+		gost.HostDialOption(host),
 	)
 
 	node.ConnectOptions = []gost.ConnectOption{
 		gost.UserAgentConnectOption(node.Get("agent")),
 		gost.NoTLSConnectOption(node.GetBool("notls")),
 		gost.NoDelayConnectOption(node.GetBool("nodelay")),
-	}
-
-	host := node.Get("host")
-	if host == "" {
-		host = node.Host
 	}
 
 	sshConfig := &gost.SSHConfig{}
@@ -342,7 +347,7 @@ func (r *route) GenRouters() ([]router, error) {
 			}
 		}
 		certFile, keyFile := node.Get("cert"), node.Get("key")
-		tlsCfg, err := tlsConfig(certFile, keyFile)
+		tlsCfg, err := tlsConfig(certFile, keyFile, node.Get("ca"))
 		if err != nil && certFile != "" && keyFile != "" {
 			return nil, err
 		}
