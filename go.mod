@@ -19,7 +19,6 @@ require (
 	github.com/go-gost/relay v0.1.0
 	github.com/go-log/log v0.1.0
 	github.com/gobwas/glob v0.2.3
-	github.com/golang/mock v1.2.0 // indirect
 	github.com/google/gopacket v1.1.17 // indirect
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
@@ -27,12 +26,11 @@ require (
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/klauspost/reedsolomon v1.7.0 // indirect
 	github.com/lucas-clemente/aes12 v0.0.0-20171027163421-cd47fb39b79f // indirect
-	github.com/lucas-clemente/quic-go v0.10.0
+	//github.com/lucas-clemente/quic-go v0.10.0
+	github.com/lucas-clemente/quic-go v0.20.1
 	github.com/lucas-clemente/quic-go-certificates v0.0.0-20160823095156-d2f86524cced // indirect
 	github.com/miekg/dns v1.1.27
 	github.com/milosgajdos83/tenus v0.0.0-20190415114537-1f3ed00ae7d8
-	github.com/onsi/ginkgo v1.7.0 // indirect
-	github.com/onsi/gomega v1.4.3 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735
 	github.com/shadowsocks/go-shadowsocks2 v0.1.1-0.20200220141918-07b789296fe6
@@ -42,8 +40,8 @@ require (
 	github.com/templexxx/xor v0.0.0-20181023030647-4e92f724b73b // indirect
 	github.com/tjfoc/gmsm v1.0.1 // indirect
 	github.com/xtaci/tcpraw v1.2.25
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
-	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	gopkg.in/gorilla/websocket.v1 v1.4.0
 	gopkg.in/xtaci/kcp-go.v4 v4.3.2
 	gopkg.in/xtaci/smux.v1 v1.0.7
