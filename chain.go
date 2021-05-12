@@ -3,6 +3,7 @@ package gost
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -25,6 +26,7 @@ type Chain struct {
 // NewChain creates a proxy chain with a list of proxy nodes.
 // It creates the node groups automatically, one group per node.
 func NewChain(nodes ...Node) *Chain {
+	fmt.Println("Chain-1 NewChain")
 	chain := &Chain{}
 	for _, node := range nodes {
 		chain.nodeGroups = append(chain.nodeGroups, NewNodeGroup(node))
@@ -35,6 +37,7 @@ func NewChain(nodes ...Node) *Chain {
 // newRoute creates a chain route.
 // a chain route is the final route after node selection.
 func newRoute(nodes ...Node) *Chain {
+	fmt.Println("Chain-2 newRoute")
 	chain := NewChain(nodes...)
 	chain.isRoute = true
 	return chain
@@ -43,6 +46,7 @@ func newRoute(nodes ...Node) *Chain {
 // Nodes returns the proxy nodes that the chain holds.
 // The first node in each group will be returned.
 func (c *Chain) Nodes() (nodes []Node) {
+	fmt.Println("Chain-3 Nodes")
 	for _, group := range c.nodeGroups {
 		if ns := group.Nodes(); len(ns) > 0 {
 			nodes = append(nodes, ns[0])
@@ -53,6 +57,7 @@ func (c *Chain) Nodes() (nodes []Node) {
 
 // NodeGroups returns the list of node group.
 func (c *Chain) NodeGroups() []*NodeGroup {
+	fmt.Println("Chain-4 NodeGroups")
 	return c.nodeGroups
 }
 
@@ -60,6 +65,7 @@ func (c *Chain) NodeGroups() []*NodeGroup {
 // If the chain is empty, an empty node will be returned.
 // If the last node is a node group, the first node in the group will be returned.
 func (c *Chain) LastNode() Node {
+	fmt.Println("Chain-5 LastNode")
 	if c.IsEmpty() {
 		return Node{}
 	}
@@ -69,6 +75,7 @@ func (c *Chain) LastNode() Node {
 
 // LastNodeGroup returns the last group of the group list.
 func (c *Chain) LastNodeGroup() *NodeGroup {
+	fmt.Println("Chain-6 LastNodeGroup")
 	if c.IsEmpty() {
 		return nil
 	}
@@ -77,6 +84,7 @@ func (c *Chain) LastNodeGroup() *NodeGroup {
 
 // AddNode appends the node(s) to the chain.
 func (c *Chain) AddNode(nodes ...Node) {
+	fmt.Println("Chain-7 Addnode")
 	if c == nil {
 		return
 	}
@@ -87,6 +95,7 @@ func (c *Chain) AddNode(nodes ...Node) {
 
 // AddNodeGroup appends the group(s) to the chain.
 func (c *Chain) AddNodeGroup(groups ...*NodeGroup) {
+	fmt.Println("Chain-8 AddnodeGroup")
 	if c == nil {
 		return
 	}
@@ -98,17 +107,20 @@ func (c *Chain) AddNodeGroup(groups ...*NodeGroup) {
 // IsEmpty checks if the chain is empty.
 // An empty chain means that there is no proxy node or node group in the chain.
 func (c *Chain) IsEmpty() bool {
+	fmt.Println("Chain-9 Isempty")
 	return c == nil || len(c.nodeGroups) == 0
 }
 
 // Dial connects to the target TCP address addr through the chain.
 // Deprecated: use DialContext instead.
 func (c *Chain) Dial(address string, opts ...ChainOption) (conn net.Conn, err error) {
+	fmt.Println("Chain-10 Dial")
 	return c.DialContext(context.Background(), "tcp", address, opts...)
 }
 
 // DialContext connects to the address on the named network using the provided context.
 func (c *Chain) DialContext(ctx context.Context, network, address string, opts ...ChainOption) (conn net.Conn, err error) {
+	fmt.Println("Chain-11 DialContext")
 	options := &ChainOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -132,6 +144,7 @@ func (c *Chain) DialContext(ctx context.Context, network, address string, opts .
 }
 
 func (c *Chain) dialWithOptions(ctx context.Context, network, address string, options *ChainOptions) (net.Conn, error) {
+	fmt.Println("Chain-12 dialWithOptions")
 	if options == nil {
 		options = &ChainOptions{}
 	}
@@ -180,6 +193,7 @@ func (c *Chain) dialWithOptions(ctx context.Context, network, address string, op
 }
 
 func (*Chain) resolve(addr string, resolver Resolver, hosts *Hosts) string {
+	fmt.Println("Chain-13 resolve")
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return addr
@@ -202,6 +216,7 @@ func (*Chain) resolve(addr string, resolver Resolver, hosts *Hosts) string {
 
 // Conn obtains a handshaked connection to the last node of the chain.
 func (c *Chain) Conn(opts ...ChainOption) (conn net.Conn, err error) {
+	fmt.Println("Chain-14 Conn")
 	options := &ChainOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -233,6 +248,7 @@ func (c *Chain) Conn(opts ...ChainOption) (conn net.Conn, err error) {
 
 // getConn obtains a connection to the last node of the chain.
 func (c *Chain) getConn(ctx context.Context) (conn net.Conn, err error) {
+	fmt.Println("Chain-15 getConn")
 	if c.IsEmpty() {
 		err = ErrEmptyChain
 		return
@@ -240,7 +256,7 @@ func (c *Chain) getConn(ctx context.Context) (conn net.Conn, err error) {
 	nodes := c.Nodes()
 	node := nodes[0]
 
-	cc, err := node.Client.Dial(node.Addr, node.DialOptions...)
+	cc, err := node.Client.Dial(node.Addr, node.DialOptions...)  //此处调用了quic的dial
 	if err != nil {
 		node.MarkDead()
 		return
@@ -280,11 +296,13 @@ func (c *Chain) getConn(ctx context.Context) (conn net.Conn, err error) {
 }
 
 func (c *Chain) selectRoute() (route *Chain, err error) {
+	fmt.Println("Chain-16 selectRoute")
 	return c.selectRouteFor("")
 }
 
 // selectRouteFor selects route with bypass testing.
 func (c *Chain) selectRouteFor(addr string) (route *Chain, err error) {
+	fmt.Println("Chain-17 selectRouteFor")
 	if c.IsEmpty() {
 		return newRoute(), nil
 	}
@@ -335,6 +353,7 @@ type ChainOption func(opts *ChainOptions)
 
 // RetryChainOption specifies the times of retry used by Chain.Dial.
 func RetryChainOption(retries int) ChainOption {
+	fmt.Println("Chain-18 RetryChainOption")
 	return func(opts *ChainOptions) {
 		opts.Retries = retries
 	}
@@ -342,6 +361,7 @@ func RetryChainOption(retries int) ChainOption {
 
 // TimeoutChainOption specifies the timeout used by Chain.Dial.
 func TimeoutChainOption(timeout time.Duration) ChainOption {
+	fmt.Println("Chain-19 Timeout")
 	return func(opts *ChainOptions) {
 		opts.Timeout = timeout
 	}
@@ -349,6 +369,7 @@ func TimeoutChainOption(timeout time.Duration) ChainOption {
 
 // HostsChainOption specifies the hosts used by Chain.Dial.
 func HostsChainOption(hosts *Hosts) ChainOption {
+	fmt.Println("Chain-20 HostChain")
 	return func(opts *ChainOptions) {
 		opts.Hosts = hosts
 	}
@@ -356,6 +377,7 @@ func HostsChainOption(hosts *Hosts) ChainOption {
 
 // ResolverChainOption specifies the Resolver used by Chain.Dial.
 func ResolverChainOption(resolver Resolver) ChainOption {
+	fmt.Println("Chain-21 ResolverChain")
 	return func(opts *ChainOptions) {
 		opts.Resolver = resolver
 	}

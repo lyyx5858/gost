@@ -25,14 +25,17 @@ type httpConnector struct {
 // HTTPConnector creates a Connector for HTTP proxy client.
 // It accepts an optional auth info for HTTP Basic Authentication.
 func HTTPConnector(user *url.Userinfo) Connector {
+	fmt.Println("http1 HTTPConnector")
 	return &httpConnector{User: user}
 }
 
 func (c *httpConnector) Connect(conn net.Conn, address string, options ...ConnectOption) (net.Conn, error) {
+	fmt.Println("http2 Connect")
 	return c.ConnectContext(context.Background(), conn, "tcp", address, options...)
 }
 
 func (c *httpConnector) ConnectContext(ctx context.Context, conn net.Conn, network, address string, options ...ConnectOption) (net.Conn, error) {
+	fmt.Println("http3 ConnectContext")
 	switch network {
 	case "udp", "udp4", "udp6":
 		return nil, fmt.Errorf("%s unsupported", network)
@@ -110,12 +113,14 @@ type httpHandler struct {
 
 // HTTPHandler creates a server Handler for HTTP proxy server.
 func HTTPHandler(opts ...HandlerOption) Handler {
+	fmt.Println("http4 HandlerOption")
 	h := &httpHandler{}
 	h.Init(opts...)
 	return h
 }
 
 func (h *httpHandler) Init(options ...HandlerOption) {
+	fmt.Println("http5 Init")
 	if h.options == nil {
 		h.options = &HandlerOptions{}
 	}
@@ -125,6 +130,7 @@ func (h *httpHandler) Init(options ...HandlerOption) {
 }
 
 func (h *httpHandler) Handle(conn net.Conn) {
+	fmt.Println("http6 Handle Start===========")
 	defer conn.Close()
 
 	req, err := http.ReadRequest(bufio.NewReader(conn))
@@ -135,9 +141,11 @@ func (h *httpHandler) Handle(conn net.Conn) {
 	defer req.Body.Close()
 
 	h.handleRequest(conn, req)
+	fmt.Println("http6 Handle END===========")
 }
 
 func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
+	fmt.Println("http7 handleRequest")
 	if req == nil {
 		return
 	}
@@ -186,6 +194,8 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		}
 
 		resp.Write(conn)
+
+		fmt.Println("http7-01")
 		return
 	}
 
@@ -200,10 +210,12 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		}
 
 		resp.Write(conn)
+		fmt.Println("http7-02")
 		return
 	}
 
 	if !h.authenticate(conn, req, resp) {
+		fmt.Println("http7-03")
 		return
 	}
 
@@ -217,6 +229,7 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		}
 
 		resp.Write(conn)
+		fmt.Println("http7-04")
 		return
 	}
 
@@ -229,7 +242,6 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 	if h.options.Retries > 0 {
 		retries = h.options.Retries
 	}
-
 	var err error
 	var cc net.Conn
 	var route *Chain
@@ -260,12 +272,14 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 			log.Logf("[http] %s -> %s : %s", conn.RemoteAddr(), conn.LocalAddr(), err)
 			continue
 		}
+	fmt.Println("http7-05")
 
-		cc, err = route.Dial(host,
+		cc, err = route.Dial(host,    //此处，开始调用chain模块中的dial方法，进行quic拨号，此处的route的类型是 *chain
 			TimeoutChainOption(h.options.Timeout),
 			HostsChainOption(h.options.Hosts),
 			ResolverChainOption(h.options.Resolver),
 		)
+	fmt.Println("http7-06")
 		if err == nil {
 			break
 		}
@@ -281,6 +295,7 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		}
 
 		resp.Write(conn)
+		fmt.Println("http7-07")
 		return
 	}
 	defer cc.Close()
@@ -297,16 +312,19 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 
 		if err = req.Write(cc); err != nil {
 			log.Logf("[http] %s -> %s : %s", conn.RemoteAddr(), conn.LocalAddr(), err)
+			fmt.Println("http7-07")
 			return
 		}
 	}
 
 	log.Logf("[http] %s <-> %s", conn.RemoteAddr(), host)
+	fmt.Println("http7-08")
 	transport(conn, cc)
 	log.Logf("[http] %s >-< %s", conn.RemoteAddr(), host)
 }
 
 func (h *httpHandler) authenticate(conn net.Conn, req *http.Request, resp *http.Response) (ok bool) {
+	fmt.Println("http8 auth")
 	u, p, _ := basicProxyAuth(req.Header.Get("Proxy-Authorization"))
 	if Debug && (u != "" || p != "") {
 		log.Logf("[http] %s -> %s : Authorization '%s' '%s'",
@@ -383,6 +401,7 @@ func (h *httpHandler) authenticate(conn net.Conn, req *http.Request, resp *http.
 }
 
 func (h *httpHandler) forwardRequest(conn net.Conn, req *http.Request, route *Chain) error {
+	fmt.Println("http9 forwardRequest")
 	if route.IsEmpty() {
 		return nil
 	}
@@ -447,6 +466,7 @@ func (h *httpHandler) forwardRequest(conn net.Conn, req *http.Request, route *Ch
 }
 
 func basicProxyAuth(proxyAuth string) (username, password string, ok bool) {
+	fmt.Println("http10 proxyAuth")
 	if proxyAuth == "" {
 		return
 	}

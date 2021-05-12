@@ -1,6 +1,7 @@
 package gost
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -61,6 +62,7 @@ func (s *Server) Serve(h Handler, opts ...ServerOption) error {
 
 	l := s.Listener
 	var tempDelay time.Duration
+	i:=0
 	for {
 		conn, e := l.Accept()
 		if e != nil {
@@ -80,7 +82,8 @@ func (s *Server) Serve(h Handler, opts ...ServerOption) error {
 			return e
 		}
 		tempDelay = 0
-
+		i++
+		fmt.Println("i=======================================",i)
 		go h.Handle(conn)
 	}
 }

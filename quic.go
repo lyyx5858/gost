@@ -23,8 +23,9 @@ type quicSession struct {
 }
 
 func (session *quicSession) GetConn() (*quicConn, error) {
+	fmt.Println("quic-1 GnetCoon")
 	//stream, err := session.session.OpenStreamSync()
-	stream, err := session.session.OpenStreamSync(context.Background())
+	stream, err := session.session.OpenStreamSync(context.Background())  //NEW
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +37,9 @@ func (session *quicSession) GetConn() (*quicConn, error) {
 }
 
 func (session *quicSession) Close() error {
+	fmt.Println("quic-2 Close")
 	//return session.session.Close()
-	return session.session.CloseWithError(201,"error test")
+	return session.session.CloseWithError(201,"error test") //NEW
 }
 
 type quicTransporter struct {
@@ -48,6 +50,7 @@ type quicTransporter struct {
 
 // QUICTransporter creates a Transporter that is used by QUIC proxy client.
 func QUICTransporter(config *QUICConfig) Transporter {
+	fmt.Println("quic-3 QUICTransporter")
 	if config == nil {
 		config = &QUICConfig{}
 	}
@@ -58,6 +61,7 @@ func QUICTransporter(config *QUICConfig) Transporter {
 }
 
 func (tr *quicTransporter) Dial(addr string, options ...DialOption) (conn net.Conn, err error) {
+	fmt.Println("-----------quic-4 Dial")
 	opts := &DialOptions{}
 	for _, option := range options {
 		option(opts)
@@ -86,7 +90,9 @@ func (tr *quicTransporter) Dial(addr string, options ...DialOption) (conn net.Co
 }
 
 func (tr *quicTransporter) Handshake(conn net.Conn, options ...HandshakeOption) (net.Conn, error) {
-	opts := &HandshakeOptions{}
+	fmt.Println("quic-5 Handshake")
+	opts := &HandshakeOptions{}  //opts是个新定义的HandshakeOptions结构体，注意带s与不带s的区别
+
 	for _, option := range options {
 		option(opts)
 	}
@@ -96,7 +102,7 @@ func (tr *quicTransporter) Handshake(conn net.Conn, options ...HandshakeOption) 
 	}
 	if config.TLSConfig == nil {
 		// config.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-		config.TLSConfig = &tls.Config{
+		config.TLSConfig = &tls.Config{                      //NEW
 			InsecureSkipVerify: true,
 			NextProtos:   []string{"HTTP"},
 		}
@@ -138,6 +144,7 @@ func (tr *quicTransporter) Handshake(conn net.Conn, options ...HandshakeOption) 
 }
 
 func (tr *quicTransporter) initSession(addr string, conn net.Conn, config *QUICConfig) (*quicSession, error) {
+	fmt.Println("quic-6 initSession")
 	udpConn, ok := conn.(net.PacketConn)
 	if !ok {
 		return nil, errors.New("quic: wrong connection type")
@@ -148,11 +155,11 @@ func (tr *quicTransporter) initSession(addr string, conn net.Conn, config *QUICC
 	}
 	quicConfig := &quic.Config{
 		//HandshakeTimeout: config.Timeout,
-		HandshakeIdleTimeout: config.Timeout,
+		HandshakeIdleTimeout: config.Timeout,         //NEW
 		KeepAlive:        config.KeepAlive,
 		//IdleTimeout:      config.IdleTimeout,
-		MaxIdleTimeout:      config.IdleTimeout,
-		Versions: []quic.VersionNumber{
+		MaxIdleTimeout:      config.IdleTimeout,       //NEW
+		Versions: []quic.VersionNumber{   //NEW
 			//quic.VersionGQUIC43,
 			//quic.VersionGQUIC39,
 			quic.VersionDraft29,
@@ -164,9 +171,8 @@ func (tr *quicTransporter) initSession(addr string, conn net.Conn, config *QUICC
 
 		config.TLSConfig = &tls.Config{
 			InsecureSkipVerify: true,
-			NextProtos:   []string{"HTTP"},
+			NextProtos:   []string{"HTTP"},  //NEW
 		}
-		fmt.Println(config.TLSConfig.NextProtos)
 
 	session, err := quic.Dial(udpConn, udpAddr, addr, config.TLSConfig, quicConfig)
 	if err != nil {
@@ -177,6 +183,7 @@ func (tr *quicTransporter) initSession(addr string, conn net.Conn, config *QUICC
 }
 
 func (tr *quicTransporter) Multiplex() bool {
+	fmt.Println("quic-7 Multiplex")
 	return true
 }
 
@@ -197,6 +204,7 @@ type quicListener struct {
 
 // QUICListener creates a Listener for QUIC proxy server.
 func QUICListener(addr string, config *QUICConfig) (Listener, error) {
+	fmt.Println("quic-8")
 	if config == nil {
 		config = &QUICConfig{}
 	}
@@ -228,7 +236,7 @@ func QUICListener(addr string, config *QUICConfig) (Listener, error) {
 		conn = &quicCipherConn{UDPConn: lconn, key: config.Key}
 	}
 
-	tlsConfig.NextProtos = []string{"HTTP"}
+	tlsConfig.NextProtos = []string{"HTTP"}   //NEW
 
 	ln, err := quic.Listen(conn, tlsConfig, quicConfig)
 	if err != nil {
@@ -246,9 +254,10 @@ func QUICListener(addr string, config *QUICConfig) (Listener, error) {
 }
 
 func (l *quicListener) listenLoop() {
+	fmt.Println("quic-8 ListenLoop")
 	for {
 		//session, err := l.ln.Accept()
-		session, err := l.ln.Accept(context.Background())
+		session, err := l.ln.Accept(context.Background())  //NEW
 		if err != nil {
 			log.Log("[quic] accept:", err)
 			l.errChan <- err
@@ -260,11 +269,13 @@ func (l *quicListener) listenLoop() {
 }
 
 func (l *quicListener) sessionLoop(session quic.Session) {
+	fmt.Println("quic-9 SessionLoop")
 	log.Logf("[quic] %s <-> %s", session.RemoteAddr(), session.LocalAddr())
 	defer log.Logf("[quic] %s >-< %s", session.RemoteAddr(), session.LocalAddr())
 
 	for {
-		stream, err := session.AcceptStream(context.Background())
+		//stream, err := session.AcceptStream()
+		stream, err := session.AcceptStream(context.Background()) //NEW
 		if err != nil {
 			log.Log("[quic] accept stream:", err)
 			//session.Close()
@@ -283,6 +294,7 @@ func (l *quicListener) sessionLoop(session quic.Session) {
 }
 
 func (l *quicListener) Accept() (conn net.Conn, err error) {
+	fmt.Println("quic-10 Accept")
 	var ok bool
 	select {
 	case conn = <-l.connChan:
@@ -295,10 +307,12 @@ func (l *quicListener) Accept() (conn net.Conn, err error) {
 }
 
 func (l *quicListener) Addr() net.Addr {
+	fmt.Println("quic-11 Addr")
 	return l.ln.Addr()
 }
 
 func (l *quicListener) Close() error {
+	fmt.Println("quic-12 Close")
 	return l.ln.Close()
 }
 
@@ -309,10 +323,12 @@ type quicConn struct {
 }
 
 func (c *quicConn) LocalAddr() net.Addr {
+	fmt.Println("quic-13 LocalAddr")
 	return c.laddr
 }
 
 func (c *quicConn) RemoteAddr() net.Addr {
+	fmt.Println("quic-14 RemoteAddr")
 	return c.raddr
 }
 
@@ -322,6 +338,7 @@ type quicCipherConn struct {
 }
 
 func (conn *quicCipherConn) ReadFrom(data []byte) (n int, addr net.Addr, err error) {
+	fmt.Println("quic-15 ReadFrom")
 	n, addr, err = conn.UDPConn.ReadFrom(data)
 	if err != nil {
 		return
@@ -337,6 +354,7 @@ func (conn *quicCipherConn) ReadFrom(data []byte) (n int, addr net.Addr, err err
 }
 
 func (conn *quicCipherConn) WriteTo(data []byte, addr net.Addr) (n int, err error) {
+	fmt.Println("quic-16 Writeto")
 	b, err := conn.encrypt(data)
 	if err != nil {
 		return
@@ -351,6 +369,7 @@ func (conn *quicCipherConn) WriteTo(data []byte, addr net.Addr) (n int, err erro
 }
 
 func (conn *quicCipherConn) encrypt(data []byte) ([]byte, error) {
+	fmt.Println("quic-17 encrypt")
 	c, err := aes.NewCipher(conn.key)
 	if err != nil {
 		return nil, err
@@ -370,6 +389,7 @@ func (conn *quicCipherConn) encrypt(data []byte) ([]byte, error) {
 }
 
 func (conn *quicCipherConn) decrypt(data []byte) ([]byte, error) {
+	fmt.Println("quic-18 decrypt")
 	c, err := aes.NewCipher(conn.key)
 	if err != nil {
 		return nil, err

@@ -89,14 +89,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	select {}
+	select {} // 此处让main函数永远不退出。永远阻塞！
 }
 
 func start() error {
 	gost.Debug = baseCfg.Debug
 
-	var routers []router
-	rts, err := baseCfg.route.GenRouters()
+	var routers []router //router和routers的区别, router是个结构，routers是个结构切片。
+	rts, err := baseCfg.route.GenRouters() //L后面的是ServNodes F后面的是ChainNodes
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func start() error {
 		routers = append(routers, rts...)
 	}
 
-	if len(routers) == 0 {
+	if len(routers) == 0 { //最简单的情况下，routers的长度为1
 		return errors.New("invalid config")
 	}
 	for i := range routers {

@@ -25,8 +25,8 @@ func (l *stringList) Set(value string) error {
 }
 
 type route struct {
-	ServeNodes stringList
-	ChainNodes stringList
+	ServeNodes stringList   //-L=：后面的参数
+	ChainNodes stringList  //-F=：后面的参数
 	Retries    int
 }
 
@@ -637,7 +637,7 @@ func (r *route) GenRouters() ([]router, error) {
 	return rts, nil
 }
 
-type router struct {
+type router struct { //注意router结构与route结构的区别
 	node     gost.Node
 	server   *gost.Server
 	handler  gost.Handler
