@@ -256,7 +256,8 @@ func (c *Chain) getConn(ctx context.Context) (conn net.Conn, err error) {
 	nodes := c.Nodes()
 	node := nodes[0]
 
-	cc, err := node.Client.Dial(node.Addr, node.DialOptions...)  //此处调用了quic的dial
+	//此处调用了quic的dial,得到cc后，又调用了Handshake
+	cc, err := node.Client.Dial(node.Addr, node.DialOptions...)
 	if err != nil {
 		node.MarkDead()
 		return

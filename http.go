@@ -272,14 +272,20 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 			log.Logf("[http] %s -> %s : %s", conn.RemoteAddr(), conn.LocalAddr(), err)
 			continue
 		}
-	fmt.Println("http7-05")
 
-		cc, err = route.Dial(host,    //此处，开始调用chain模块中的dial方法，进行quic拨号，此处的route的类型是 *chain
+
+		fmt.Println("http7-05 Client 开始拨号远端的proxy server")
+
+		//此处，开始调用chain模块中的dial方法，进行quic拨号，此处的route的类型是 *chain, 而chain结构有个方法：dial
+		cc, err = route.Dial(host,
 			TimeoutChainOption(h.options.Timeout),
 			HostsChainOption(h.options.Hosts),
 			ResolverChainOption(h.options.Resolver),
 		)
-	fmt.Println("http7-06")
+
+		fmt.Println("http7-06")
+
+
 		if err == nil {
 			break
 		}
