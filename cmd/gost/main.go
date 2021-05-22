@@ -95,7 +95,7 @@ func main() {
 func start() error {
 	gost.Debug = baseCfg.Debug
 
-	var routers []router //router和routers的区别, router是个结构，routers是个结构切片。
+	var routers []router //route和router和routers的区别, router是个结构，routers是个结构切片。
 	rts, err := baseCfg.route.GenRouters() //L后面的是ServNodes F后面的是ChainNodes
 	if err != nil {
 		return err

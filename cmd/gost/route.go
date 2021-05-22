@@ -142,7 +142,7 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 	timeout := node.GetDuration("timeout")
 
 	var tr gost.Transporter
-	switch node.Transport {
+	switch node.Transport {  //此处是分析F后面的参数：
 	case "tls":
 		tr = gost.TLSTransporter()
 	case "mtls":
@@ -209,7 +209,7 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 	}
 
 	var connector gost.Connector
-	switch node.Protocol {
+	switch node.Protocol { //此处是分析F后面的参数：
 	case "http2":
 		connector = gost.HTTP2Connector(node.User)
 	case "socks", "socks5":
@@ -370,7 +370,7 @@ func (r *route) GenRouters() ([]router, error) {
 		}
 
 		var ln gost.Listener
-		switch node.Transport {
+		switch node.Transport {  //此处是分析L后面的参数。
 		case "tls":
 			ln, err = gost.TLSListener(node.Addr, tlsCfg)
 		case "mtls":
@@ -526,7 +526,7 @@ func (r *route) GenRouters() ([]router, error) {
 		}
 
 		var handler gost.Handler
-		switch node.Protocol {
+		switch node.Protocol { //此处是分析L后面的参数。
 		case "http2":
 			handler = gost.HTTP2Handler()
 		case "socks", "socks5":
@@ -639,7 +639,7 @@ func (r *route) GenRouters() ([]router, error) {
 
 type router struct { //注意router结构与route结构的区别
 	node     gost.Node
-	server   *gost.Server
+	server   *gost.Server  //server是个结构指针，它用来存放结构体gost.Server的地址。 在GenRoutersy方法里是这样初始化的：server:  &gost.Server{Listener: ln},
 	handler  gost.Handler
 	chain    *gost.Chain
 	resolver gost.Resolver
