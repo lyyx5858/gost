@@ -31,6 +31,7 @@ func NewChain(nodes ...Node) *Chain {
 	for _, node := range nodes {
 		chain.nodeGroups = append(chain.nodeGroups, NewNodeGroup(node))
 	}
+	fmt.Println("end Chain-1 ")
 	return chain
 }
 
@@ -40,6 +41,7 @@ func newRoute(nodes ...Node) *Chain {
 	fmt.Println("Chain-2 newRoute")
 	chain := NewChain(nodes...)
 	chain.isRoute = true
+	fmt.Println("end Chain-2 ")
 	return chain
 }
 
@@ -52,6 +54,7 @@ func (c *Chain) Nodes() (nodes []Node) {
 			nodes = append(nodes, ns[0])
 		}
 	}
+	fmt.Println("end Chain-3 ")
 	return
 }
 
@@ -70,6 +73,7 @@ func (c *Chain) LastNode() Node {
 		return Node{}
 	}
 	group := c.nodeGroups[len(c.nodeGroups)-1]
+	fmt.Println("end Chain-5 ")
 	return group.GetNode(0)
 }
 
@@ -79,6 +83,7 @@ func (c *Chain) LastNodeGroup() *NodeGroup {
 	if c.IsEmpty() {
 		return nil
 	}
+	fmt.Println("end Chain-6 ")
 	return c.nodeGroups[len(c.nodeGroups)-1]
 }
 
@@ -91,6 +96,7 @@ func (c *Chain) AddNode(nodes ...Node) {
 	for _, node := range nodes {
 		c.nodeGroups = append(c.nodeGroups, NewNodeGroup(node))
 	}
+	fmt.Println("end Chain-7 ")
 }
 
 // AddNodeGroup appends the group(s) to the chain.
@@ -102,6 +108,7 @@ func (c *Chain) AddNodeGroup(groups ...*NodeGroup) {
 	for _, group := range groups {
 		c.nodeGroups = append(c.nodeGroups, group)
 	}
+	fmt.Println("end Chain-8 ")
 }
 
 // IsEmpty checks if the chain is empty.
@@ -109,6 +116,7 @@ func (c *Chain) AddNodeGroup(groups ...*NodeGroup) {
 func (c *Chain) IsEmpty() bool {
 	fmt.Println("Chain-9 Isempty")
 	return c == nil || len(c.nodeGroups) == 0
+
 }
 
 // Dial connects to the target TCP address addr through the chain.
@@ -140,6 +148,7 @@ func (c *Chain) DialContext(ctx context.Context, network, address string, opts .
 			break
 		}
 	}
+	fmt.Println("end Chain-11 ")
 	return
 }
 
@@ -189,6 +198,7 @@ func (c *Chain) dialWithOptions(ctx context.Context, network, address string, op
 		conn.Close()
 		return nil, err
 	}
+	fmt.Println("end Chain-12 ")
 	return cc, nil
 }
 

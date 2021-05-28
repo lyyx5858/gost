@@ -215,7 +215,6 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 	}
 
 	if !h.authenticate(conn, req, resp) {
-		fmt.Println("http7-03")
 		return
 	}
 
@@ -273,10 +272,9 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 			continue
 		}
 
-
 		fmt.Println("http7-05 Client 开始拨号远端的proxy server")
 
-		//此处，开始调用chain模块中的dial方法，进行quic拨号，此处的route的类型是 *chain, 而chain结构有个方法：dial
+		//此处，开始调用chain模块中的dial方法，进行拨号，此处的route的类型是 *chain, 而chain结构有个方法：dial
 		cc, err = route.Dial(host,
 			TimeoutChainOption(h.options.Timeout),
 			HostsChainOption(h.options.Hosts),
@@ -284,7 +282,6 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		)
 
 		fmt.Println("http7-06")
-
 
 		if err == nil {
 			break
@@ -301,7 +298,6 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		}
 
 		resp.Write(conn)
-		fmt.Println("http7-07")
 		return
 	}
 	defer cc.Close()
@@ -324,8 +320,11 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 	}
 
 	log.Logf("[http] %s <-> %s", conn.RemoteAddr(), host)
-	fmt.Println("http7-08")
+
+	//conn 是近端的连接，cc是quic远端的连接，下面这句话是最关键的一句，将两个数据进行在两个连接上交接。。。
 	transport(conn, cc)
+
+	fmt.Println("http7-08")
 	log.Logf("[http] %s >-< %s", conn.RemoteAddr(), host)
 }
 
