@@ -20,7 +20,7 @@ import (
 )
 
 // Version is the gost version.
-const Version = "2.11.1"
+const Version = "2.11.1 2022-02-24"
 
 // Debug is a flag that enables the debug log.
 var Debug bool
@@ -29,23 +29,26 @@ var (
 	tinyBufferSize   = 512
 	smallBufferSize  = 2 * 1024  // 2KB small buffer
 	mediumBufferSize = 8 * 1024  // 8KB medium buffer
-	largeBufferSize  = 32 * 1024 // 32KB large buffer
+	largeBufferSize  = 16 * 1024 // 32KB large buffer
 )
 
 var (
 	sPool = sync.Pool{
 		New: func() interface{} {
-			return make([]byte, smallBufferSize)
+			p := make([]byte, smallBufferSize)
+			return p
 		},
 	}
 	mPool = sync.Pool{
 		New: func() interface{} {
-			return make([]byte, mediumBufferSize)
+			p := make([]byte, mediumBufferSize)
+			return p
 		},
 	}
 	lPool = sync.Pool{
 		New: func() interface{} {
-			return make([]byte, largeBufferSize)
+			p := make([]byte, largeBufferSize)
+			return &p
 		},
 	}
 )

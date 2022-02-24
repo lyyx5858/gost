@@ -11,7 +11,7 @@ import (
 )
 
 // Client is a proxy client.
-// A client is divided into two layers: connector and transporter.
+// A client is divided into two layers:   connector and transporter.
 // Connector is responsible for connecting to the destination address through this proxy.
 // Transporter performs a handshake with this proxy.
 type Client struct {

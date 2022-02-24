@@ -28,6 +28,9 @@ require (
 	gitlab.com/yawning/obfs4.git v0.0.0-20210511220700-e330d1b7024b
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 	golang.org/x/net v0.0.0-20211215060638-4ddde0e984e9
+)
+
+require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/coreos/go-iptables v0.6.0 // indirect
