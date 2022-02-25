@@ -302,7 +302,10 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 	}
 
 	log.Logf("[http] %s <-> %s", conn.RemoteAddr(), host)
+	t0 := time.Now()
 	transport(conn, cc)
+	t1 := time.Now()
+	fmt.Println("=======Time=========", t1.Sub(t0))
 	log.Logf("[http] %s >-< %s", conn.RemoteAddr(), host)
 }
 

@@ -124,5 +124,6 @@ func copyBuffer(dst io.Writer, src io.Reader) error {
 	defer lPool.Put(buf)
 
 	_, err := io.CopyBuffer(dst, src, *buf)
+	//_, err := io.Copy(dst, src)
 	return err
 }
