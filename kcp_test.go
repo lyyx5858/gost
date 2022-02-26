@@ -65,7 +65,7 @@ func BenchmarkHTTPOverKCP(b *testing.B) {
 	sendData := make([]byte, 128)
 	rand.Read(sendData)
 
-	ln, err := KCPListener("", nil)
+	ln, err := KCPListener("localhost:0", nil)
 	if err != nil {
 		b.Error(err)
 	}
@@ -98,7 +98,7 @@ func BenchmarkHTTPOverKCPParallel(b *testing.B) {
 	sendData := make([]byte, 128)
 	rand.Read(sendData)
 
-	ln, err := KCPListener("", nil)
+	ln, err := KCPListener("localhost:0", nil)
 	if err != nil {
 		b.Error(err)
 	}
