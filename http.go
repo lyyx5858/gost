@@ -126,8 +126,9 @@ func (h *httpHandler) Init(options ...HandlerOption) {
 
 func (h *httpHandler) Handle(conn net.Conn) {
 	defer conn.Close()
-
-	req, err := http.ReadRequest(bufio.NewReader(conn))
+	rd := bufio.NewReader(conn)
+	//req, err := http.ReadRequest(bufio.NewReader(conn))
+	req, err := http.ReadRequest(rd)
 	if err != nil {
 		log.Logf("[http] %s - %s : %s", conn.RemoteAddr(), conn.LocalAddr(), err)
 		return

@@ -231,6 +231,7 @@ func (tr *kcpTransporter) initSession(addr string, conn net.Conn, config *KCPCon
 
 	// stream multiplex
 	smuxConfig := smux.DefaultConfig()
+	smuxConfig.Version = 1
 	smuxConfig.MaxReceiveBuffer = config.SockBuf
 	smuxConfig.KeepAliveInterval = time.Duration(config.KeepAlive) * time.Second
 	var cc net.Conn = kcpconn
@@ -332,6 +333,7 @@ func (l *kcpListener) listenLoop() {
 
 func (l *kcpListener) mux(conn net.Conn) {
 	smuxConfig := smux.DefaultConfig()
+	smuxConfig.Version = 1
 	smuxConfig.MaxReceiveBuffer = l.config.SockBuf
 	smuxConfig.KeepAliveInterval = time.Duration(l.config.KeepAlive) * time.Second
 
